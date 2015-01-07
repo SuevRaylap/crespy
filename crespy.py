@@ -1,5 +1,5 @@
-import urllib2
-import urllib
+import urllib.request, urllib.error, urllib.parse
+import urllib.request, urllib.parse, urllib.error
 import json
 import collections
 import pprint
@@ -28,10 +28,11 @@ class CrespyObj(collections.MutableMapping):
       url = base_url
     encoded_post_data = None
     if post_data is not None and isinstance(post_data,dict):
-      encoded_post_data = urllib.urlencode(post_data)
-    req = urllib2.Request(url=url, headers=self._headers, data=encoded_post_data)
-    f = urllib2.urlopen(req)
-    self._data = json.loads(f.read(), object_hook=partial(crespy_hook, self._headers))._data
+      encoded_post_data = urllib.parse.urlencode(post_data)
+    req = urllib.request.Request(url=url, headers=self._headers, data=encoded_post_data)
+    f = urllib.request.urlopen(req)
+    str_f = f.readall().decode('utf-8')
+    self._data = json.loads(str_f, object_hook=partial(crespy_hook, self._headers))._data
     self._loaded = True
     
   def __getitem__(self,key):
@@ -40,7 +41,7 @@ class CrespyObj(collections.MutableMapping):
       child._url = self._data[key]
       return child
     else:
-      child = self._data[unicode(key)]
+      child = self._data[str(key)]
       return child
   def __setitem__(self, key, value):
     pass
@@ -58,8 +59,8 @@ class CrespyObj(collections.MutableMapping):
     else:
       return pprint.pformat(self._data)
   def __getattr__(self, name):
-    if unicode(name) in self._data:
-      return self.__getitem__(unicode(name))
+    if str(name) in self._data:
+      return self.__getitem__(str(name))
     else:
       return None
 
